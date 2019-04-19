@@ -1,0 +1,1014 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1.0,user-scalable=no">
+    <meta name="theme-color" content="#FDD000"/>
+    <meta charset="utf-8">
+    <title>行装商城</title>
+
+    <link rel="stylesheet" href="https://resj.outdoorclub.com.cn/jss/css/bootstrap.min.css">
+
+    <!-- Add the slick-theme.css if you want default styling -->
+    <link rel="stylesheet" type="text/css" href="https://resj.outdoorclub.com.cn/jss/other/slick/slick.css"/>
+    <!-- Add the slick-theme.css if you want default styling -->
+    <link rel="stylesheet" type="text/css" href="https://resj.outdoorclub.com.cn/jss/other/slick/slick-theme.css"/>
+    <link rel="stylesheet" href="https://resj.outdoorclub.com.cn/jss/css/own/commonOwn.css?vcss=3"/>
+    <link rel="stylesheet" type="text/css" href="https://resj.outdoorclub.com.cn/jss/css/swiper.css"/>
+    <link rel="stylesheet" type="text/css" href="https://resj.outdoorclub.com.cn/jss/css/own/aboutUs.css"/>
+    
+    <script src="https://resj.outdoorclub.com.cn/jss/js/jquery-1.9.1/jquery-1.9.1.min.js"></script>
+    <script src="https://resj.outdoorclub.com.cn/jss/js/vue.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.3.2.js"></script>
+    <style>
+        html,body{
+            width: 100%;
+            overflow-x: hidden;
+        }
+        .horizontalCenter {
+            display: flex;
+            flex-flow: row wrap;
+            align-items: flex-start;
+        }
+
+        /*.indexWrapper > div {*/
+        /*padding-top: 2rem;*/
+        /*}*/
+
+        .indexWrapper > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        .searchBarWrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin: 0.5em 0;
+        }
+
+        .searchBarWrapper > div {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        a {
+            color: black;
+        }
+
+        a:link {
+            text-decoration: none;
+        }
+
+        a:visited {
+            color: black;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: black;
+            text-decoration: none;
+        }
+
+        a:active {
+            color: black;
+            text-decoration: none;
+        }
+
+        .clickable {
+            cursor: pointer;
+        }
+        .canScroll{
+            -webkit-transform:translate3d(0,0,0)
+        }
+        .iScrollIndicator{
+            border: none !important;
+        }
+        .iScrollLoneScrollbar{
+            width: 4px !important;
+        }
+        .wrapperScroll{
+            width: 100%;
+        }
+        /*轮播图不遮盖底部导航栏*/
+        .swiper-container{
+            z-index:0;
+        }
+    </style>
+</head>
+<body style="background-color: #FFFFFF">
+<script type="application/javascript">
+    function  nofind() {
+        var img=event.srcElement;
+        img.src="/image/search/xzDefault.png";
+        img.onerror=null;
+    }
+</script>
+<div class="wrapperScroll">
+    <div id="contentWrapper" style="width: 100%; overflow-x: hidden;">
+        <div id="searchOld" style="display: none;z-index: 100;background-color: white">
+            <div class="searchBarWrapper" >
+                <div style="width: 90%;background-color: #eeeeee" class="clickable1" onclick="goSearch()">
+                    <img src="/image/search/wenhao.png" style="width: 1.4rem;margin:0 1rem">
+                    <div style="width: 88%;color: #999999;margin: 0.6rem 0;font-size: 1.3rem;line-height: 1.8rem">点击搜索</div>
+                </div>
+            </div>
+        </div>
+
+        
+
+<style>
+    .navBar {
+        /*width: 100%;*/
+        display: flex;
+        display: -webkit-flex;
+        flex-wrap: nowrap;
+        -webkit-flex-wrap: nowrap;
+        /*overflow: auto;*/
+        /*margin-bottom: -1rem;*/
+    }
+
+    .navBar > div {
+        flex: 0 0 auto;
+        -webkit-flex: 0 0 auto;
+        margin:0 0.6em 0.5em 0.6em;
+        /*margin: 0 0.6em;*/
+        border: none;
+        padding: 0.5em 0;
+    }
+
+    .navBar > div.selected {
+        font-weight: bold;
+        border-bottom: 0.2em solid #FFCB00;
+        color: #333333;
+    }
+</style>
+<div id="scrollBarWrapper" style="display: none;overflow-y: hidden;z-index: 100">
+    <div class="scrollBar" style="overflow-x: scroll;-webkit-overflow-scrolling : touch">
+        <div id="navBarWrapper" class="navBar" :style="adjustFont">
+            <div :class="[selected===-1?selectedClass:'','clickable']" @click="clickToIndex">推荐</div>
+            <div :class="[selected===index?selectedClass:'','clickable']" v-for="(item,index) in extraLinks"
+                 @click="goto(item.layoutId,index)">
+                {{item.label}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/vue.js"></script>
+<script src="/js/jquery-1.9.1/jquery-1.9.1.min.js"></script>
+<script src="/js/iscroll-probe.js"></script>
+<script src="/js/ownJs/md5Sign.js"></script>
+<script src="/js/mid5/md5.js"></script>
+<script>
+    var params = {};
+    var urlSign,map;
+    var navBarVM = new Vue({
+        el: "#navBarWrapper",
+        data: {
+            adjustFont: {
+                fontSize: window.innerWidth * 17 / 375 + 'px'
+            },
+            selected: -1,
+            extraLinks: [],
+            clickable: 'clickable',
+            selectedClass: 'selected',
+            barScroll:{},
+            showMoreStyle:true,
+        },
+        mounted: function () {
+            params = {};
+            urlSign = "/index/getNavBar";
+            map = getSign(urlSign,params);
+            $.ajaxSettings.async = false;
+            $.get("../index/getNavBar?appId="+map.appId+"&sign="+map.sign+"&timestamp="+map.timestamp, function (data) {
+                if (data.resultCode === 2000){
+                    this.extraLinks = data.data;
+                    if(data.data.length==0){
+                        $("#searchTop").show();
+                        this.showMoreStyle = true;
+                    }else{
+                        $("#scrollBarWrapper").show();
+                        $("#searchOld").show();
+                        this.showMoreStyle =  false;
+                    }
+                }
+
+            }.bind(this));
+            $.ajaxSettings.async = true;
+
+            $("#navBarWrapper >div:nth-child(1)").css("margin-left",window.innerWidth*0.05+"px");
+//            window.addEventListener("load",this.loaded,false);
+            if(this.selected!=-1){
+                $("#scrollBarWrapper").css({
+                    height:($(".scrollBar").height()-6)+"px"
+                })
+            }else{
+                $("#scrollBarWrapper").css({
+                    height:($(".scrollBar").height()-9)+"px"
+                })
+            }
+
+        },
+        watch:{
+            extraLinks:function () {
+                var scrollW=0;
+                this.$nextTick(function () {
+                        var scrollC=$(".clickable").length;
+                        scrollW+=$(".clickable")[scrollC-1].clientWidth+$(".clickable")[scrollC-1].offsetLeft;
+                        $("#navBarWrapper").css("width",scrollW+"px");
+                    }
+                )
+            }
+        },
+        methods: {
+            goto: function (layoutId, index) {
+                window.location.href = "../index/extra?id=" + layoutId + '&selected=' + index;
+            },
+            clickToIndex:function () {
+                window.location.href='/html/index/home';
+            },
+            loaded:function (){
+                var _this=this;
+                setTimeout(function(){
+                    _this.barScroll=new IScroll(".scrollBar",{
+                        tap:true,
+                        mouseWheel: true,
+                        edgeRestorePrevent: null,
+                        bounce:false,
+                        scrollX:true,
+                        scrollY:false
+                    });
+                    $(".scrollBar").get(0).addEventListener("touchstart",function(){
+                        _this.barScroll.refresh();
+                    });
+                },100 );
+            }
+        }
+    });
+</script>
+
+        <div id="app" class="horizontalCenter indexWrapper" style="width: 100%">
+            <div :style="{width:item.listData.width,backgroundColor:'#'+item.listData.bgColor}"
+                 v-for="(item,index) in layout">
+                <p :is='item.module + "-Template"' :item="item" :index="index"></p>
+            </div>
+            <div v-show="isLoading&&!isAll">
+                <div style="font-size: 1.5rem;color: grey;margin:0.6rem 0;">数据载入中...</div>
+            </div>
+            <div id="endOfPage" v-show="(!isLoading||isAll)&&ifInit" style="padding: 10px 0;width: 100%;">
+                <div style="width: 100%;height: 100%;display: flex;justify-content: center;align-items: center">
+                    <img style="width: 90%" src="/image/EOP.png">
+                </div>
+                <about-us></about-us>
+            </div>
+        </div>
+    </div>
+    <div id="searchTop" style="position: fixed;top:0;left: 0;background-color:rgba(255,255,255,0);width: 100%;z-index:10;display: none">
+        <div class="searchBarWrapper">
+            <div style="width: 90%;background-color: rgba(238,238,238,0.7041);border-radius: 30px" class="clickable" onclick="goSearch()">
+                <img src="/image/search/wenhao.png" style="width: 1.4rem;margin:0 1rem">
+                <div style="width: 88%;color: #555555;margin: 0.6rem 0;font-size: 1.3rem;line-height: 1.8rem">点击搜索</div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://resj.outdoorclub.com.cn/jss/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://resj.outdoorclub.com.cn/jss/other/slick/slick.js"></script>
+<script type="text/javascript" src="https://resj.outdoorclub.com.cn/jss/js/swiper.js"></script>
+<script src="/index/components"></script>
+<script src="https://resj.outdoorclub.com.cn/jss/js/jquery.cookie.js"></script>
+<script src="https://resj.outdoorclub.com.cn/jss/js/mid5/md5.js"></script>
+<script src="https://resj.outdoorclub.com.cn/jss/js/ownJs/md5Sign.js"></script>
+<script src="https://resj.outdoorclub.com.cn/jss/js/ownJs/statData.js?v=1"></script>
+<script type="text/javascript" src="https://resj.outdoorclub.com.cn/jss/js/ownJs/aboutUs.js?v=2"></script>
+
+<div id="footerMark" style="width:100%" data-page="1"></div>
+<div id="footerHide" style="position: fixed;bottom: 0;left: 0;display: none;z-index: 100;">
+    
+<!DOCTYPE html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"/>
+<meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport"/>
+<head>
+</head>
+<style>
+
+
+</style>
+<body>
+<div class="homePageFooter" style="box-shadow: 0 -2px 6px 0 rgba(0,0,0,0.08);">
+    <div class="homePageFooterCon">
+        <div class="homePageFooterMain mark1" onclick="clickHomePage()">
+            <img src="/image/search/homepageno1.png"/>
+            <div>首页</div>
+        </div>
+        <div class="homePageFooterMain mark2" onclick="clickHomePageCategroy()">
+            <img src="/image/search/categno1.png"/>
+            <div>分类</div>
+        </div>
+        <div class="homePageFooterMain mark5" onclick="clickMessageCenter()" style="position: relative">
+            <div id="messageCenter"
+                 style="position:absolute;top:0px;left:50%;text-align:center;border-radius: 50%;background-color: #FF3D43;color: #FFFFFF;display:
+none"></div>
+            <img src="/image/search/messageno1.png"/>
+            <div>消息中心</div>
+        </div>
+        <div class="homePageFooterMain mark3" onclick="clickHomePageShoppingCart()" style="position: relative">
+            <div id="shoppingNum"
+                 style="position:absolute;top:0px;left:50%;text-align:center;border-radius: 50%;background-color: #FF3D43;color: #FFFFFF;display: none"></div>
+            <img src="/image/search/gouwucheno1.png"/>
+            <div>购物车</div>
+        </div>
+        <div class="homePageFooterMain mark4" onclick="clickHomePagePersonalCenter()">
+            <img src="/image/search/gerenzhongxinno1.png"/>
+            <div>个人中心</div>
+        </div>
+        
+        
+        
+        
+    </div>
+
+</div>
+<div class="iphoneX" style="width:100%;height:32px;background-color:#fff;position: fixed;bottom:0;display:none"></div>
+<script type="text/javascript" src="https://resj.outdoorclub.com.cn/jss/js/mid5/md5.js"></script>
+<script type="text/javascript" src="https://resj.outdoorclub.com.cn/jss/js/ownJs/md5Sign.js"></script>
+<script>
+    $(function () {
+        footer();
+        var isPhoneX = isIphoneX();
+
+        if (isPhoneX) {
+            var wechatInfo = navigator.userAgent.match(/MicroMessenger\/([\d\\.]+)/i);
+            if (wechatInfo!=null&&wechatInfo[1] < "6.6.7") {
+                $(".homePageFooter").css("bottom", "32px");
+                $(".iphoneX").show();
+            }else {
+                $(".homePageFooter").css("bottom", "0");
+                $(".iphoneX").hide();
+            }
+        } else {
+            $(".homePageFooter").css("bottom", "0");
+            $(".iphoneX").hide();
+        }
+        $('#shoppingNum').css({"width":window.innerWidth * 17 / 375+"px","height":window.innerWidth * 17 / 375+"px","max-width":1024 * 17 / 375+"px","max-height":1024 * 17 / 375+"px"});
+        $('#messageCenter').css({"width":window.innerWidth * 17 / 375+"px","height":window.innerWidth * 17 / 375+"px","max-width":1024 * 17 / 375+"px","max-height":1024 * 17 / 375+"px"});
+        if(window.innerWidth<1024){
+            $('#shoppingNum').css("margin-left",window.innerWidth * 17 / 375/3+"px");
+            $('#messageCenter').css("margin-left",window.innerWidth * 17 / 375/3+"px");
+        }else{
+            $('#shoppingNum').css("margin-left",1024* 17 / 375/3+"px");
+            $('#messageCenter').css("margin-left",1024* 17 / 375/3+"px");
+        }
+        getShoppingCartGoodsNum();
+        if ($("#footerMark").data("page") != 5) {
+            getUnReadMessage();
+        }
+        var u = navigator.userAgent;
+        var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1; //android终端
+        if(isAndroid){
+            $("#shoppingNum").css("line-height","17px");
+            $("#messageCenter").css("line-height","17px");
+        }
+
+    })
+    function footer() {
+        var heightFooter = window.innerWidth * 50 / 375 + "px";
+        var widthImgFooter = window.innerWidth * 25 / 375 + "px";
+        var heightImgFooter = window.innerWidth * 25 / 375 + "px";
+        $(".homePageFooter").css("height", heightFooter);
+        $(".homePageFooter").css("max-height",1024 * 50 / 375 + "px");
+        $(".homePageFooterCon").css("height", heightFooter);
+        $(".homePageFooterCon").css("height", 1024 * 50 / 375 + "px");
+        $(".homePageFooterMain img").css({"width": widthImgFooter, "height": heightImgFooter});
+        $(".homePageFooterMain img").css({"max-width":1024 * 25 / 375 + "px", "max-height": 1024 * 25 / 375 + "px"});
+        if ($("#footerMark").data("page") == 1) {
+            $(".mark1 img").attr("src", "/image/search/shouye3.png")
+        } else if ($("#footerMark").data("page") == 2) {
+            $(".mark2 img").attr("src", "/image/search/feilei2.png")
+        } else if ($("#footerMark").data("page") == 3) {
+            $(".mark3 img").attr("src", "/image/search/gouwuche2.png")
+        } else if ($("#footerMark").data("page") == 4) {
+            $(".mark4 img").attr("src", "/image/search/gerenzhongxin2.png")
+        } else if ($("#footerMark").data("page") == 5) {
+            $(".mark5 img").attr("src", "/image/search/xiaoxi2.png")
+        }
+        //选中文字颜色
+        $.each($(".homePageFooterCon>div"),function (index, item) {
+            var activeIndex=$("#footerMark").data("page");
+            if(item.className.indexOf("mark"+activeIndex)!=-1){
+                item.style.color="#241E04";
+            }else{
+                item.style.color="#999999";
+            }
+        })
+
+    }
+
+
+    function clickHomePage() {
+        window.location.href = "/html/index/home";
+    }
+
+    function clickHomePageCategroy() {
+        window.location.href = "/html/category/categoryMain";
+    }
+
+    function clickMessageCenter() {
+        window.location.href = "/html/messageCenter/messageCenterMain";
+    }
+
+    function clickHomePageShoppingCart() {
+        window.location.href = "/html/commodity/shoppingCart?home=1";
+    }
+
+    function clickHomePagePersonalCenter() {
+        window.location.href = "/html/personalCenter/personalCenterHomePage";
+    }
+
+    function isIphoneX() {
+        return /iphone/gi.test(navigator.userAgent) && (screen.height == 812 && screen.width == 375)
+    }
+
+    function getShoppingCartGoodsNum(){//获取购物车里面的商品数量
+        if($.cookie("auth_userId")!=undefined){
+            var params="userId=" + $.cookie("auth_userId");
+            var sign=getSign("/html/sCart/getNo",params);
+            $.ajax({
+                type: "GET",//数据发送的方式（post 或者 get）
+                url: "/html/sCart/getNo?"+sign,//要发送的后台地址
+                dataType: "json",//后台处理后返回的数据格式
+                success: function (data) {//ajax请求成功后触发的方法
+                    if (data.resultCode == 2000) {
+                        if(data.data!="0"){
+                            var num=data.data;
+                            if(num>99){
+                                $('#shoppingNum').html("99+");
+                            }else{
+                                $('#shoppingNum').html(num);
+                            }
+                            if(window.innerWidth<1024){
+                                $('#shoppingNum').css("font-size",window.innerWidth * 9 / 375+"px");
+                                $('#shoppingNum').css("line-height",window.innerWidth * 17 / 375+"px");
+                            }else{
+                                $('#shoppingNum').css("font-size","2rem");
+                                $('#shoppingNum').css("line-height",1024 * 17 / 375+"px");
+                            }
+                            $('#shoppingNum').show();
+                        }else{
+                            $('#shoppingNum').hide();
+                        }
+                    }
+                },
+                error: function (msg) {//ajax请求失败后触发的方法
+                    console.log(msg);//弹出错误信息
+                }
+            });
+        }
+    }
+    var messageUnReadList = [];
+    function getUnReadMessage(callback) {//获取未读消息个数
+       messageUnReadList = [];
+        if($.cookie("auth_userId")!=undefined){
+            var params="userId=" + $.cookie("auth_userId");
+            var sign=getSign("/api/notification/getUnreadCount",params);
+            $.ajax({
+                type: "GET",//数据发送的方式（post 或者 get）
+                url: "/api/notification/getUnreadCount?"+sign,//要发送的后台地址
+                dataType: "json",//后台处理后返回的数据格式
+                success: function (data) {//ajax请求成功后触发的方法
+                    if (data.resultCode == 2000) {
+                        var num = 0;
+                        messageUnReadList = data.data;
+                        $.each(messageUnReadList,function (index,item) {
+                            num = num+item.number
+                        })
+                        if(num!=0){
+                            if(num>99){
+                                $('#messageCenter').html("99+");
+                            }else{
+                                $('#messageCenter').html(num);
+                            }
+                            if(window.innerWidth<1024){
+                                $('#messageCenter').css("font-size",window.innerWidth * 9 / 375+"px");
+                                $('#messageCenter').css("line-height",window.innerWidth * 17 / 375+"px");
+                            }else{
+                                $('#messageCenter').css("font-size","2rem");
+                                $('#messageCenter').css("line-height",1024 * 17 / 375+"px");
+                            }
+                            $('#messageCenter').show();
+                        }else{
+                            $('#messageCenter').hide();
+                        }
+                        if(callback) callback();
+                    }
+                },
+                error: function (msg) {//ajax请求失败后触发的方法
+                    console.log(msg);//弹出错误信息
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>
+</div>
+</body>
+<script type="application/javascript">
+    var ua = window.navigator.userAgent.toLowerCase();
+    var u = navigator.userAgent, app = navigator.appVersion;
+    //        MicroMessenger  MicroMessage
+    if (u.indexOf('MicroMessenger') == -1) {//说明不在微信中
+        // 走不在小程序的逻辑
+        $("#footerHide").show();
+    } else {
+        wx.miniProgram.getEnv(function(res) {
+            if (res.miniprogram) {
+                // 走在小程序的逻辑
+                var aa= false;
+                if (aa==false){
+                    $(".wrapperScroll").css("margin-bottom", "0");
+                }
+            } else {
+                // 走不在小程序的逻辑
+                $("#footerHide").show();
+            }
+        })
+    }
+</script>
+<script type="text/javascript" src="https://resj.outdoorclub.com.cn/jss/js/ownJs/wxFontHandle.js"></script>
+<script type="text/javascript" src="https://resj.outdoorclub.com.cn/jss/js/ownJs/indexJsSDK.js?v=1"></script>
+<script>
+    var params = {};
+    var urlSign,map;
+    $(function () {
+        if (isIphoneX()) {
+            if (sessionStorage.pagecount){
+                sessionStorage.pagecount=Number(sessionStorage.pagecount) +1;
+            }else{
+                sessionStorage.pagecount=1;
+            }
+
+            var wechatInfo = navigator.userAgent.match(/MicroMessenger\/([\d\\.]+)/i);
+            if (wechatInfo!=null&&wechatInfo[1] < "6.6.7") {
+                $(".wrapperScroll").css("margin-bottom", window.innerWidth * 50 / 375+32+"px");
+            }else {
+                if(sessionStorage.pagecount>=1&&window.history.length==1){
+                    $(".iphoneX").show();
+                    $(".homePageFooter").css("bottom", "32px");
+                    $(".wrapperScroll").css("margin-bottom",  window.innerWidth * 50 / 375+32+"px");
+                }else {
+                    $(".homePageFooter").css("bottom", "0");
+                    $(".wrapperScroll").css("margin-bottom", window.innerWidth * 50 / 375+"px");
+                }
+            }
+        } else {
+            if(window.innerWidth>1024){
+                $(".wrapperScroll").css("margin-bottom", 1024* 50 / 375+"px");
+            }else{
+                $(".wrapperScroll").css("margin-bottom", window.innerWidth * 50 / 375+"px");
+            }
+        }
+        // var requestParam=getRequestParam();
+        
+            
+            
+                
+            
+
+            
+                
+            
+            
+            
+
+            
+            
+            
+                
+                
+                
+                
+                
+                    
+                        
+                        
+                        
+                        
+                        
+                        
+                            
+                                
+                                
+                                
+                                
+                                
+                                
+                            
+                        
+                        
+                        
+                            
+                                
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                
+                            
+                            
+                                
+                                
+                                
+                                
+                            
+                        
+
+
+                    
+                
+                
+                    
+                
+            
+
+
+        
+        getShoppingCartGoodsNum();
+        //对用户锁粉
+        
+        
+        
+        
+            
+            
+                
+                
+                
+                
+                
+                    
+                
+                
+                    
+                
+            
+        
+    });
+    function getRequestParam(){
+        var url = location.search; //获取url中"?"符后的字串
+        var theRequest = new Object();
+        if (url.indexOf("?") != -1) {
+            var str = url.substr(1);
+            strs = str.split("&");
+            for(var i = 0; i < strs.length; i ++) {
+                theRequest[strs[i].split("=")[0]] = unescape(strs[i].split("=")[1]);
+            }
+        }
+        return theRequest;
+    }
+    function goSearch() {
+        window.location.href = '/html/search/searchMain';
+    }
+
+    function isIphoneX() {
+        return /iphone/gi.test(navigator.userAgent) && (screen.height == 812 && screen.width == 375)
+    }
+
+    function getShoppingCartGoodsNum(){//获取购物车里面的商品数量
+        params = {};
+        params.userId = $.cookie("auth_userId");
+        urlSign = "/html/sCart/getNo";
+        map = getSign(urlSign,params);
+        $.ajax({
+            type: "GET",//数据发送的方式（post 或者 get）
+            url:"/html/sCart/getNo",
+            data:map,
+            
+            dataType: "json",//后台处理后返回的数据格式
+            success: function (data) {//ajax请求成功后触发的方法
+                if (data.resultCode == 2000) {
+                    if(data.data!="0"){
+                        var num=data.data;
+                        if(num>99){
+                            $('#shoppingNum').html("99+");
+                        }else{
+                            $('#shoppingNum').html(num);
+                        }
+                        if(window.innerWidth<1024){
+                            $('#shoppingNum').css("font-size",window.innerWidth * 9 / 375+"px");
+                            $('#shoppingNum').css("line-height",window.innerWidth * 17 / 375+"px");
+                        }else{
+                            $('#shoppingNum').css("font-size","2rem");
+                            $('#shoppingNum').css("line-height",1024 * 17 / 375+"px");
+                        }
+                        $('#shoppingNum').show();
+                    }else{
+                        $('#shoppingNum').hide();
+                    }
+                }
+            },
+            error: function (msg) {//ajax请求失败后触发的方法
+                console.log(msg);//弹出错误信息
+            }
+        })
+    }
+
+    $(function () {
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                layout: [],
+                pageNo: 1,
+                isLoading: true,
+                isAll:false,
+                version: "1.0.0",
+                myscroll: {},
+                count:[],
+                ifInit:"",
+                ifValue:"0",//用来判断页面滑动方向，上或下
+                showMoreStyle:true,
+                scrollAction :{
+                    x: 'undefined',
+                    y: 'undefined' },
+                scrollDirection:"",
+            },
+            created:function () {
+                var _this = this;
+                _this.isLoading=true;
+                _this.ifInit = false;
+            },
+            mounted: function () {
+                var _this = this;
+//                $("#contentWrapper").css({
+//                    "paddingTop":$("#searchTop").height()+"px"
+//                });
+                params = {};
+                urlSign = "/index/loadLayout";
+                map = getSign(urlSign,params);
+                console.log(map);
+                if(navBarVM.showMoreStyle){
+                    $("#searchTop").show();
+                }else{
+                    $("#scrollBarWrapper").show();
+                    $("#searchOld").show();
+                }
+
+                $.get("/index/loadLayout?appId="+map.appId+"&sign="+map.sign+"&timestamp="+map.timestamp, function (data) {
+                    data = JSON.parse(data);
+                    if (data.resultCode === 2000) {
+                        _this.layout = JSON.parse(data.data);
+                        _this.ifInit = true;
+                        _this.$nextTick(function () {
+                            _this.initA();
+                            for(var i=0;i<_this.layout.length;i++){
+                                if(_this.layout[i].module=="sharePage"){
+                                    if(_this.layout[i].listData.ifShare == "1"){
+                                        //微信分享
+                                        var shareParam={
+                                            shareType:1,
+                                            userId:$.cookie("auth_userId"),
+                                            title:_this.layout[i].listData.firstTitle,
+                                            desc:_this.layout[i].listData.secondTitle,
+                                            img_url:_this.layout[i].listData.imgUrl,
+                                            activityShare:1,
+                                        };
+                                        break;
+                                    }
+                                }else if(_this.layout.length==(i+1)){
+                                    //微信分享
+                                    var shareParam={
+                                        shareType:1,
+                                        userId:$.cookie("auth_userId")
+                                    };
+                                }
+                            }
+                            wxJsSDK.setShare(shareParam,function () {
+                                getShare();
+                            });
+                        });
+                        _this.isLoading=false;
+
+                    }
+                });
+                $(window).on("scroll", function () {
+                    if(navBarVM.showMoreStyle){
+                        if($(window).scrollTop()>($("#topBanner-topBanner-a").height()-$("#searchTop").height()/2)){
+                            $("#searchTop").css("backgroundColor","rgba(255,255,255,1)")
+                        }else {
+                            $("#searchTop").css("backgroundColor","rgba(255,255,255,0)")
+                        }
+                    }else {
+                        if ($(window).scrollTop() > $("#searchOld").height()) {
+                            $("#scrollBarWrapper").css({
+                                position: "fixed",
+                                top: "0px",
+                                left: "0px",
+                                backgroundColor: "white",
+                                overflowX: "scroll",
+                                width: window.innerWidth + "px"
+                            })
+                            _this.scrollFunc();
+                            if (_this.scrollDirection == "up") {
+                                $("#searchOld").css({
+                                    position: "fixed",
+                                    top: "0px",
+                                    left: "0px",
+                                    width:"100%"
+                                })
+                                $("#scrollBarWrapper").css({
+                                    position: "fixed",
+                                    top: $("#searchOld").height() + "px",
+                                    left: "0px",
+                                    backgroundColor: "white",
+                                    overflowX: "scroll",
+                                    width: window.innerWidth + "px"
+                                })
+                            } else {
+                                $("#searchOld").css({
+                                    position: "static",
+                                })
+                            }
+                        } else {
+                            $("#searchOld").css({
+                                position: "static",
+                            })
+                            $("#scrollBarWrapper").css({
+                                position: "static",
+                            })
+
+                        }
+                    }
+                    if ($(window).scrollTop() > $(document).height() - $(window).height() - 10 && !_this.isAll&&!_this.isLoading) {
+                        _this.isLoading = true;
+                        _this.pageNo++;
+                        $.get("/index/loadLayout?pageNo=" + _this.pageNo+"&appId="+map.appId+"&sign="+map.sign+"&timestamp="+map.timestamp, function (data) {
+                            data = JSON.parse(data);
+                            var tmp = JSON.parse(data.data);
+                            if (tmp !== null) {
+                                _this.isLoading = false;
+                                _this.isAll=false;
+                                $.each(tmp, function (i, item) {
+                                    _this.layout.push(item);
+                                });
+                            }else{
+                                _this.isAll=true;
+                            }
+                        })
+                    }
+                });
+            },
+            watch: {
+                layout: function () {
+                    var _this = this;
+                    _this.$nextTick(function () {
+//                        console.log($('.indexWrapper>div') + "lkmnn")
+//                        $('.indexWrapper>div').css({
+////                            "padding-top":window.innerWidth*0.05+"px"
+//                        })
+                        _this.initA();
+                        for (var i = 0; i < $(".lineParent").parent().length; i++) {
+                            if ($(".lineParent").parent()[i].style.backgroundColor) {
+                                $(".lineParent")[i].childNodes[0].style.borderColor = $(".lineParent").parent()[i].style.backgroundColor;
+                            }
+                        };
+                        $(".lineParent").parent().css({
+                            "padding-top": "0px",
+//                            "margin-bottom":window.innerWidth*0.05+"px",
+                            "margin-bottom": "0px",
+                            "background-color": "#ffffff"
+                        });
+
+                    });
+                },
+                scrollDirection:function () {
+                    var _this = this;
+                    console.log(_this.scrollDirection)
+
+                }
+            },
+            methods: {
+                initA:function () {
+                    var _this = this;
+                        $("a").off("click").on("click", function (event) {
+//                                event.stopPropagation()
+//                                event.preventDefault()
+                        if(_this.isAndorIos() == "null"){
+                            var url=$(this).data("href");
+                            var actAction = $(this).data("action");
+                            var actParam = $(this).data("param");
+                            if(url&&url.indexOf("/goodsMessage")>-1){
+                                var index=url.indexOf("goodsId=");
+                                var param=url.substr(index+8);
+                                var id;
+                                if(param.indexOf("&")>-1){
+                                    var nextIndex=param.indexOf("&");
+                                    id=param.substring(0,nextIndex);
+                                }else{
+                                    id=param;
+                                }
+                                _czc.push(['_trackEvent',"首页","查看","商品："+id]);
+                            }
+                            setTimeout(function () {
+//                                    window.location.href = url;
+                                var u = navigator.userAgent;
+                                if (u.indexOf('MicroMessenger') == -1) {//说明不在微信中
+                                    // 走不在小程序的逻辑
+                                    window.location.href = url;
+                                } else {
+                                    wx.miniProgram.getEnv(function(res) {
+                                        if (res.miniprogram) {
+                                            // 走在小程序的逻辑
+                                            if(actAction=="goodsDetail"){
+                                                wx.miniProgram.navigateTo({url: '/pages/activity-detail/activity-detail?goodsId=' +  actParam});
+                                            }else{
+                                                window.location.href = url;
+                                            }
+                                        } else {
+//                                                // 走不在小程序的逻辑
+                                            window.location.href = url;
+                                        }
+                                    })
+                                }
+                            },300);
+                        }else {
+                            var act = "", par = "";
+                            if ($(this).data("action") != null) {
+                                act = $(this).data("action")
+                            }
+                            if ($(this).data("param") != null) {
+                                par = $(this).data("param");
+                            }
+                            if (_this.isAndorIos() == "android"){
+                                if($(this).data("action")!="url"){
+                                    window.android.__helloApp(act, par);
+                                }else {
+                                    window.location.href =  $(this).data("href");
+                                }
+
+                                }else if (_this.isAndorIos()=="ios"){
+                                    if($(this).data("action")!="url"){
+                                        window.webkit.messageHandlers.__helloApp.postMessage([act, par])
+                                    }else {
+                                        window.location.href =  $(this).data("href");
+                                    }
+
+                                }
+                            }
+                        });
+                },
+                isAndorIos:function () {
+                    var ua = window.navigator.userAgent.toLowerCase();
+                    var u = navigator.userAgent, app = navigator.appVersion;
+                    var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Linux') > -1;
+                    var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端;
+                    if (isAndroid&&ua.match(/MicroMessenger/i) != 'micromessenger'){
+                        return "android";
+                    }else if (isiOS&&ua.match(/MicroMessenger/i) != 'micromessenger'){
+                        return "ios";
+                    }else {
+                        return "null"
+                    }
+                },
+                scrollFunc:function () {
+                    var _this  = this;
+                    if(typeof _this.scrollAction.x == 'undefined') {
+                        _this.scrollAction.x = window.pageXOffset;
+                        _this.scrollAction.y = window.pageYOffset;
+                    }
+                    var diffX = _this.scrollAction.x - window.pageXOffset;
+                    var diffY = _this.scrollAction.y - window.pageYOffset;
+                    if(diffY < 0) {
+                        // Scroll down
+                        _this.scrollDirection = 'down';
+                    } else if(diffY > 0) {
+                        // Scroll up
+                        _this.scrollDirection = 'up';
+                    } else {
+                        // First scroll event
+                    }
+                    _this.scrollAction.x = window.pageXOffset;
+                    _this.scrollAction.y = window.pageYOffset;
+
+                }
+            }
+        });
+        function __helloApp(appAction, appParam) {
+            console.log(appAction);
+            console.log(appParam);
+        }
+    });
+
+
+</script>
+
+</html>
