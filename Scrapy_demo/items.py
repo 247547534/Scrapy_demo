@@ -11,4 +11,23 @@ import scrapy
 class ScrapyDemoItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    pass
+    title = scrapy.Field()
+    price = scrapy.Field()
+    send_addr = scrapy.Field()
+    send_nums = scrapy.Field()
+    #说明
+    explain = scrapy.Field()
+    #授权书
+    authorization = scrapy.Field()
+
+
+class CrawlDemoItem(scrapy.Item):
+    title = scrapy.Field()
+
+
+class DemoItem(scrapy.Item):
+    title = scrapy.Field()
+    start_addr = scrapy.Field()
+    attr = scrapy.Field()
+    days = scrapy.Field()
+    price = scrapy.Field()
